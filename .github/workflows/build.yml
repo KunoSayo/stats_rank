@@ -1,4 +1,4 @@
-name: Build for PoolTouhou
+name: Build
 
 on:
   push:
@@ -32,23 +32,15 @@ jobs:
         with:
           toolchain: nightly
           override: true
-      - name: Install dependencies for Windows
-        if: matrix.os == 'windows-latest'
-        uses: crazy-max/ghaction-chocolatey@v1
-        with:
-          args: install ninja
-      - name: Install dependencies for Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install pkg-config && sudo apt-get install libasound2-dev
       - name: Build
-        run: cargo build --manifest-path pooltouhou/Cargo.toml --release --verbose -Z unstable-options --out-dir artifacts --no-default-features
+        run: cargo build --release --verbose -Z unstable-options --out-dir artifacts --no-default-features
+      - name: Hash
+      - shell: bash
+        run: |
+          find artifacts | xargs sha1sum > artifacts/sha1sum
+          find artifacts | xargs md5sum > artifacts/md5sum
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
           path: ${{ github.workspace }}/artifacts
-          name: ${{ matrix.os }}-${{ github.run_number }}
-      - name: Upload res
-        uses: actions/upload-artifact@v1
-        with:
-          path: ${{ github.workspace }}/pooltouhou/res
           name: ${{ matrix.os }}-${{ github.run_number }}
