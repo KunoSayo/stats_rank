@@ -35,8 +35,8 @@ jobs:
       - name: Hash
         shell: bash
         run: |
-          find artifacts | xargs sha1sum > artifacts/sha1sum
-          find artifacts | xargs md5sum > artifacts/md5sum
+          find artifacts -type f | xargs sha1sum > artifacts/sha1sum
+          find artifacts -type f | xargs md5sum > artifacts/md5sum
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
