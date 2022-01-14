@@ -17,7 +17,6 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest, ubuntu-latest, macos-latest ]
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -35,7 +34,7 @@ jobs:
       - name: Build
         run: cargo build --release --verbose -Z unstable-options --out-dir artifacts --no-default-features
       - name: Hash
-      - shell: bash
+        shell: bash
         run: |
           find artifacts | xargs sha1sum > artifacts/sha1sum
           find artifacts | xargs md5sum > artifacts/md5sum
