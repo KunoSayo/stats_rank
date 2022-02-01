@@ -94,7 +94,7 @@ fn get_level_name(file_path: PathBuf) -> Result<String, std::io::Error> {
     let mut file = File::open(file_path)?;
     let mut content = String::new();
     file.read_to_string(&mut content)?;
-    content.split("\n").filter(|x| x.starts_with("level-name"))
+    content.lines().filter(|x| x.starts_with("level-name"))
         .map(|x| x.split("=").skip(1).take(1).next())
         .map(|x| x.unwrap_or("world").trim().to_string()).next()
         .ok_or(std::io::Error::new(std::io::ErrorKind::NotFound, "Cannot found level name"))
