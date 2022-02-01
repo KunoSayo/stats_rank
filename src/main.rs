@@ -96,7 +96,7 @@ fn get_level_name(file_path: PathBuf) -> Result<String, std::io::Error> {
     file.read_to_string(&mut content)?;
     content.split("\n").filter(|x| x.starts_with("level-name"))
         .map(|x| x.split("=").skip(1).take(1).next())
-        .map(|x| x.unwrap_or("world").to_string()).next()
+        .map(|x| x.unwrap_or("world").trim().to_string()).next()
         .ok_or(std::io::Error::new(std::io::ErrorKind::NotFound, "Cannot found level name"))
 }
 
@@ -117,15 +117,25 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let world = match get_level_name(dir.join("server.properties")) {
-        Ok(name) => name,
+        Ok(name) => {
+            println!("Found world name: {}", &name);
+            name
+        },
         Err(e) => {
             eprintln!("Level name cannot be found for {:?}", e);
             return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "The level name cannot be found").into());
         }
     };
     let mut rank = HashMap::new();
-    for x in dir.join(&world).join("stats").read_dir()? {
-        let path = x?.path();
+    for x in dir.join(&world).join("stats").read_dir().expect("Read stats dir failed") {
+        if let Err(e) = x {
+            eprintln!("Load stat file failed for {:?}", e);
+            continue;
+        }
+        let path = x.unwrap().path();
+        if path.is_dir() {
+            continue;
+        }
         if let Some(uuid) = path.file_name()
             .map(|x| x.to_string_lossy().split('.').next().map(|x| x.to_string()))
             .flatten() {
@@ -176,6 +186,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         }
+    }
+    if rank.is_empty() {
+        println!("Got empty ranked.");
     }
     for (key, (mut rank, num)) in rank {
         if num {
